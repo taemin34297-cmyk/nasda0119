@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -29,92 +30,84 @@ public class PostController {
     private final PostImageService postImageService;
     private final UserRepository userRepository;
 
-    // =========================
     // 1. 글 작성 페이지 (GET)
-    // =========================
-    // 중요: {postId} 상세 보기보다 무조건 위에 있어야 400 에러가 나지 않습니다.
     @GetMapping("/posts/create")
     public String createForm(Model model) {
         model.addAttribute("postCreateRequestDto", new PostCreateRequestDto("", "", ""));
         model.addAttribute("categories", categoryRepository.findAll());
 
-        // 헤더용 사용자 닉네임
         String nickname = getCurrentNicknameOrNull();
         model.addAttribute("username", nickname == null ? "게스트" : nickname);
 
-        return "post/create";
+        return "post/create"; // templates/post/create.html
     }
 
-    // =========================
     // 2. 게시글 상세 보기 (ID 변수 처리)
-    // =========================
-
-    // [수정] String으로 받아 "create" 같은 문자가 들어왔을 때 400 에러가 나지 않도록 방어합니다.
+    // 기존의 viewCompat과 viewPost를 하나로 합쳐서 깔끔하게 정리했습니다.
     @GetMapping("/posts/{postId}")
-    public String viewCompat(@PathVariable("postId") String postIdStr) {
-        try {
-            // 숫자인 경우에만 상세 페이지로 리다이렉트
-            Integer postId = Integer.parseInt(postIdStr);
-            return "redirect:/post/view.html?id=" + postId;
-        } catch (NumberFormatException e) {
-            // "create"나 "write" 같은 글자가 들어오면 글쓰기 페이지로 보냅니다.
-            return "redirect:/posts/create";
-        }
-    }
-
-    // 실제 상세 페이지 렌더링
-    @GetMapping("/post/view.html")
     public String viewPost(
-            @RequestParam("id") Integer postId,
+            @PathVariable("postId") String postIdStr,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "5") int size,
             Model model
     ) {
-        PostEntity entity = postService.get(postId);
-        List<String> imageUrls = postImageService.getImageUrls(postId);
-        Integer currentUserId = getCurrentUserIdOrNull();
+        try {
+            // "create" 문자가 들어오면 상세보기가 아닌 글쓰기 폼으로 토스
+            if ("create".equals(postIdStr)) {
+                return "forward:/posts/create";
+            }
 
-        boolean isOwner = currentUserId != null
-                && entity.getUser() != null
-                && currentUserId.equals(entity.getUser().getUserId());
+            Integer postId = Integer.parseInt(postIdStr);
 
-        PostViewDto post = new PostViewDto(
-                entity.getPostId(),
-                entity.getTitle(),
-                entity.getDescription(),
-                entity.getCategory().getCategoryName(),
-                new PostViewDto.AuthorDto(entity.getUser().getNickname()),
-                imageUrls,
-                entity.getCreatedAt(),
-                isOwner
-        );
+            // 데이터 조회 로직
+            PostEntity entity = postService.get(postId);
+            List<String> imageUrls = postImageService.getImageUrls(postId);
+            Integer currentUserId = getCurrentUserIdOrNull();
 
-        var commentsPage = commentService.getCommentsPage(postId, page, size, currentUserId);
-        model.addAttribute("post", post);
-        model.addAttribute("comments", commentsPage.getContent());
-        model.addAttribute("commentsPage", commentsPage);
+            boolean isOwner = currentUserId != null
+                    && entity.getUser() != null
+                    && currentUserId.equals(entity.getUser().getUserId());
 
-        String nickname = getCurrentNicknameOrNull();
-        model.addAttribute("username", nickname == null ? "게스트" : nickname);
+            PostViewDto post = new PostViewDto(
+                    entity.getPostId(),
+                    entity.getTitle(),
+                    entity.getDescription(),
+                    entity.getCategory().getCategoryName(),
+                    new PostViewDto.AuthorDto(entity.getUser().getNickname()),
+                    imageUrls,
+                    entity.getCreatedAt(),
+                    isOwner
+            );
 
-        return "post/view";
+            var commentsPage = commentService.getCommentsPage(postId, page, size, currentUserId);
+            model.addAttribute("post", post);
+            model.addAttribute("comments", commentsPage.getContent());
+            model.addAttribute("commentsPage", commentsPage);
+
+            String nickname = getCurrentNicknameOrNull();
+            model.addAttribute("username", nickname == null ? "게스트" : nickname);
+
+            return "post/view"; // templates/post/view.html
+
+        } catch (NumberFormatException e) {
+            return "redirect:/posts"; // 숫자가 아니면 리스트로
+        }
     }
 
-    // =========================
-    // 3. 홈 리스트 및 글 등록(POST)
-    // =========================
+    // 3. 홈 리스트
     @GetMapping("/posts")
     public String list(Model model) {
         model.addAttribute("posts", postService.getHomePosts());
         return "index";
     }
 
+    // 4. 글 등록(POST)
     @PostMapping("/posts")
     public String createPost(
             @RequestParam String title,
             @RequestParam String category,
             @RequestParam(required = false) String description,
-            @RequestParam(required = false) List<org.springframework.web.multipart.MultipartFile> images
+            @RequestParam(required = false) List<MultipartFile> images
     ) {
         Integer userId = getCurrentUserIdOrNull();
         if (userId == null) return "redirect:/user/login";
@@ -122,14 +115,17 @@ public class PostController {
         CategoryEntity categoryEntity = categoryRepository.findByCategoryName(category)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리: " + category));
 
+        // DB 저장
         PostEntity post = postService.create(userId, categoryEntity.getCategoryId(), title, description);
-        postImageService.addImages(post, images);
+        if (images != null && !images.isEmpty()) {
+            postImageService.addImages(post, images);
+        }
 
-        return "redirect:/post/view.html?id=" + post.getPostId();
+        // ⭐ 수정 포인트: .html을 붙이지 않고 설정한 @GetMapping 주소로 리다이렉트
+        return "redirect:/posts/" + post.getPostId();
     }
 
-    // ... (editForm, editPost, deletePost 및 사용자 정보 메서드들 생략 - 기존과 동일) ...
-
+    // 유저 정보 헬퍼 메서드 (기존과 동일)
     private String getLoginIdOrNull() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) return null;
