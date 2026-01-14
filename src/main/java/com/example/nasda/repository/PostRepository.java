@@ -10,15 +10,15 @@ public interface PostRepository extends JpaRepository<PostEntity, Integer> {
 
     long countByUser_UserId(Integer userId);
 
+    // ✅ 추가: 내 전체 포스트 목록 조회를 위해 꼭 필요합니다.
+    List<PostEntity> findByUser_UserIdOrderByCreatedAtDesc(Integer userId);
+
     List<PostEntity> findTop4ByUser_UserIdOrderByCreatedAtDesc(Integer userId);
 
-    // 단순 버전
     List<PostEntity> findAllByOrderByCreatedAtDesc();
 
-    // ✅ 홈 최적화: 최신 N개만
     List<PostEntity> findTop30ByOrderByCreatedAtDesc();
 
-    // ✅ 추천: N+1 방지용 fetch join (필요 시 사용)
     @Query("""
         select p
         from PostEntity p

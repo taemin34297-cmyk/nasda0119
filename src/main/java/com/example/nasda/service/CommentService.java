@@ -8,8 +8,11 @@ import com.example.nasda.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 
 @Service
@@ -70,6 +73,7 @@ public class CommentService {
         // 예: total=15, size=5 -> (15-1)/5 = 2 (0-based)
         return (int) ((total - 1) / safeSize);
     }
+
     @Transactional
     public Integer deleteComment(Integer commentId, Integer currentUserId) {
         var comment = commentRepository.findById(commentId)
@@ -100,5 +104,31 @@ public class CommentService {
 
         comment.edit(trimmed); // 아래 2)에서 엔티티 메서드 추가
         return comment.getPost().getPostId();
+    }
+
+    // CommentService.java 내부에 추가
+    @Transactional(readOnly = true)
+    public Page<CommentEntity> findByUserId(Integer userId, Pageable pageable) {
+        // ⚠️ Repository에서도 findByUserId(Integer userId, Pageable pageable)로 이름이 동일해야 합니다.
+        return commentRepository.findByUserId(userId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public int getPageNumberByCommentId(Integer postId, Integer commentId, int pageSize) {
+        // 1. DESC(최신순)로 정렬하여 리스트를 가져옵니다.
+        List<CommentEntity> allComments = commentRepository.findByPost_PostIdOrderByCreatedAtDesc(postId);
+
+        int index = 0;
+        for (int i = 0; i < allComments.size(); i++) {
+            if (allComments.get(i).getCommentId().equals(commentId)) {
+                index = i;
+                break;
+            }
+        }
+
+        System.out.println("디버깅 - 전체 댓글 수: " + allComments.size());
+        System.out.println("디버깅 - 내 댓글의 순서(Index): " + index);
+
+        return index / pageSize;
     }
 }

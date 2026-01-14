@@ -155,4 +155,20 @@ public class PostController {
         postService.delete(id, userId);
         return "redirect:/";
     }
+
+    // PostController.java에 추가
+    @GetMapping("/posts/my")
+    public String myPosts(Model model) {
+        Integer userId = authUserService.getCurrentUserIdOrNull();
+        if (userId == null) return "redirect:/user/login";
+
+        // postService에 유저 ID로 글을 찾는 메서드가 있다고 가정
+        List<PostEntity> myPosts = postService.findByUserId(userId);
+        model.addAttribute("posts", myPosts);
+
+        String nickname = authUserService.getCurrentNicknameOrNull();
+        model.addAttribute("username", nickname == null ? "게스트" : nickname);
+
+        return "post/my-list"; // 새로 만들 HTML 파일명
+    }
 }

@@ -1,17 +1,28 @@
 package com.example.nasda.dto.post;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public record PostViewDto(
-        Integer id,
-        String title,
-        String content,
-        String category,
-        AuthorDto author,
-        List<String> images,
-        LocalDateTime createdAt,
-        boolean isOwner
-) {
-    public record AuthorDto(String nickname) {}
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class PostViewDto {
+    private Integer id;
+    private String title;
+    private String content;
+    private String category;
+    private AuthorDto author;
+    private List<String> images;
+    private LocalDateTime createdAt;
+    private boolean isOwner;
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AuthorDto {
+        private String nickname;
+    }
 }

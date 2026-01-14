@@ -28,12 +28,12 @@
 
     <section class="flex-1 min-h-[600px]">
 
-        <!-- ✅ 나의 활동 탭 -->
         <div id="content-activity" class="space-y-6">
             <h3 class="text-xl font-bold text-[#5A4D41] mb-6">나의 활동</h3>
 
             <div class="grid grid-cols-2 gap-4">
-                <div class="bg-white p-8 rounded-2xl border border-[#E8D5C4]/30 shadow-sm">
+                <div th:onclick="|location.href='@{/posts/my}'|"
+                     class="bg-white p-8 rounded-2xl border border-[#E8D5C4]/30 shadow-sm cursor-pointer hover:bg-[#F2ECE4] transition-all">
                     <p class="text-[#A89080] text-sm mb-2">작성한 게시물</p>
                     <p class="text-3xl font-bold text-[#5A4D41]">
                         <span th:text="${postCount != null ? postCount : 0}">0</span>
@@ -41,7 +41,9 @@
                     </p>
                 </div>
 
-                <div class="bg-white p-8 rounded-2xl border border-[#E8D5C4]/30 shadow-sm">
+                <div th:onclick="|location.href='@{/comments/my}'|"
+                     class="bg-white p-8 rounded-2xl border border-[#E8D5C4]/30 shadow-sm cursor-pointer hover:bg-[#F2ECE4] transition-all">
+
                     <p class="text-[#A89080] text-sm mb-2">작성한 댓글</p>
                     <p class="text-3xl font-bold text-[#5A4D41]">
                         <span th:text="${commentCount != null ? commentCount : 0}">0</span>
@@ -53,17 +55,21 @@
             <div class="mt-10">
                 <h4 class="text-[#8B7355] font-semibold mb-4">최근 작성한 게시물</h4>
 
-                <!-- ✅ myPosts null-safe 처리 -->
                 <div class="grid grid-cols-2 gap-4"
                      th:if="${myPosts != null and !myPosts.isEmpty()}">
 
                     <div th:each="post : ${myPosts}"
-                         class="bg-white rounded-xl overflow-hidden border border-[#E8D5C4]/20 shadow-sm">
+                         th:if="${post != null}"
+                         th:onclick="|location.href='/posts/' + ${post.id}|"
+                         class="bg-white rounded-xl overflow-hidden border border-[#E8D5C4]/20 shadow-sm cursor-pointer hover:shadow-md transition-all">
 
-                        <!-- ✅ images null-safe 처리 -->
                         <img th:if="${post.images != null and !post.images.isEmpty()}"
                              th:src="@{${post.images[0]}}"
                              class="w-full h-32 object-cover"/>
+                        <div th:unless="${post.images != null and !post.images.isEmpty()}"
+                             class="w-full h-32 bg-[#F2ECE4] flex items-center justify-center text-[#A89080] text-xs">
+                            No Image
+                        </div>
 
                         <div class="p-4">
                             <p class="font-medium text-[#5A4D41] truncate"
@@ -81,7 +87,6 @@
             </div>
         </div>
 
-        <!-- ✅ 계정 관리 탭 -->
         <div id="content-account" class="hidden space-y-6">
             <h3 class="text-xl font-bold text-[#5A4D41] mb-6">계정 관리</h3>
 
@@ -89,7 +94,6 @@
                   class="bg-white p-8 rounded-2xl border border-[#E8D5C4]/30 shadow-sm space-y-6">
                 <div>
                     <label class="block text-xs text-[#A89080] mb-1">아이디</label>
-                    <!-- ✅ user null-safe 처리 -->
                     <div class="p-4 bg-[#F9F6F1] rounded-xl text-[#5A4D41] font-medium"
                          th:text="${user != null ? user.loginId : 'N/A'}">userid</div>
                 </div>
@@ -137,7 +141,6 @@
                 </div>
             </div>
         </div>
-
     </section>
 </main>
 
@@ -151,13 +154,11 @@
         if (tabName === 'activity') {
             activityContent.classList.remove('hidden');
             accountContent.classList.add('hidden');
-
             activityBtn.className = "w-full flex justify-between items-center p-4 rounded-xl transition-all bg-[#D4C4B0] text-white shadow-sm";
             accountBtn.className = "w-full flex justify-between items-center p-4 rounded-xl transition-all bg-white text-[#8B7355] border border-[#E8D5C4]/50 hover:bg-[#F2ECE4]";
         } else {
             activityContent.classList.add('hidden');
             accountContent.classList.remove('hidden');
-
             accountBtn.className = "w-full flex justify-between items-center p-4 rounded-xl transition-all bg-[#D4C4B0] text-white shadow-sm";
             activityBtn.className = "w-full flex justify-between items-center p-4 rounded-xl transition-all bg-white text-[#8B7355] border border-[#E8D5C4]/50 hover:bg-[#F2ECE4]";
         }

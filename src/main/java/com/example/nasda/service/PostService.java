@@ -100,7 +100,11 @@ public class PostService {
         // ✅ 3. 게시글 삭제
         postRepository.delete(post);
     }
-
+    // PostService.java
+    @Transactional(readOnly = true)
+    public List<PostEntity> findByUserId(Integer userId) {
+        return postRepository.findByUser_UserIdOrderByCreatedAtDesc(userId);
+    }
     // ✅ 마이페이지: 내 게시글 개수
     @Transactional(readOnly = true)
     public long countMyPosts(Integer userId) {
@@ -130,7 +134,7 @@ public class PostService {
                             new PostViewDto.AuthorDto(post.getUser().getNickname()),
                             images,
                             post.getCreatedAt(),
-                            false
+                            true
                     );
                 })
                 .toList();

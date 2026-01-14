@@ -66,9 +66,38 @@
 
                     <div th:if="${session.loginUser != null}">
                         <a th:href="@{/user/mypage}" class="block px-4 py-2 text-sm hover:bg-[#F9F6F1]">마이페이지</a>
-                        <a th:href="@{/user/logout}" class="block px-4 py-2 text-sm text-red-400 hover:bg-[#F9F6F1]">로그아웃</a>
+                        <a href="javascript:void(0)" onclick="confirmLogout()" class="block px-4 py-2 text-sm text-red-400 hover:bg-[#F9F6F1]">로그아웃</a>
                     </div>
                 </div>
+
+                <script th:fragment="commonScript" th:inline="javascript">
+                    function toggleProfileMenu(e) {
+                        e.stopPropagation();
+                        const dropdown = document.getElementById('profileDropdown');
+                        if (dropdown) {
+                            dropdown.classList.toggle('hidden');
+                        }
+                    }
+
+                    // 화면 어디든 클릭하면 드롭다운 닫기
+                    window.addEventListener('click', () => {
+                        const dropdown = document.getElementById('profileDropdown');
+                        if (dropdown && !dropdown.classList.contains('hidden')) {
+                            dropdown.classList.add('hidden');
+                        }
+                    });
+
+                    // 로그아웃 확인 함수 추가
+                    function confirmLogout() {
+                        if (confirm("로그아웃 하시겠습니까?")) {
+                            location.href = /*[[@{/user/logout}]]*/ '/user/logout';
+                        }
+                    }
+
+                    /* 기존 검색 모달 등 함수 유지 */
+                    function openSearchModal() { document.getElementById('searchModal')?.classList.remove('hidden'); }
+                    function closeSearchModal() { document.getElementById('searchModal')?.classList.add('hidden'); }
+                </script>
             </div>
         </div>
     </div>
