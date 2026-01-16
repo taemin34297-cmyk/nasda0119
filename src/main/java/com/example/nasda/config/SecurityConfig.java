@@ -26,6 +26,7 @@ public class SecurityConfig {
                         .requestMatchers("/posts/**", "/post/**").permitAll()
                         // 3. 정적 리소스 허용
                         .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/api/member/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

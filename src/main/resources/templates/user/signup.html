@@ -121,8 +121,15 @@
             display: none;
         }
 
-        .help-text.success { color: #22c55e; display: block; }
-        .help-text.error { color: #ef4444; display: block; }
+        .help-text.success {
+            color: #22c55e;
+            display: block;
+        }
+
+        .help-text.error {
+            color: #ef4444;
+            display: block;
+        }
 
         .btn-submit {
             width: 100%;
@@ -142,7 +149,10 @@
             color: var(--text-medium);
         }
 
-        .signup-footer a { color: var(--text-dark); text-decoration: underline; }
+        .signup-footer a {
+            color: var(--text-dark);
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -158,9 +168,11 @@
         <form th:action="@{/user/signup}" method="post" class="signup-form" id="signupForm">
 
             <div class="form-group">
-                <label for="loginId" class="form-label">아이디</label>
+                <label for="username" class="form-label">아이디</label>
                 <div class="input-with-button">
-                    <input type="text" id="loginId" name="loginId" class="form-input" placeholder="아이디를 입력하세요" required minlength="3">
+                    <input type="text" id="username" name="loginId"
+                           class="form-input" style="background-color: white;"
+                           placeholder="아이디를 입력하세요" required>
                     <button type="button" class="btn-check" onclick="checkUsername()">중복 확인</button>
                 </div>
                 <p id="usernameCheck" class="help-text"></p>
@@ -184,9 +196,14 @@
             <div class="form-group">
                 <label for="password" class="form-label">비밀번호</label>
                 <div class="input-wrapper">
-                    <input type="password" id="password" name="password" class="form-input" placeholder="6자 이상 입력" required minlength="6">
+                    <input type="password" id="password" name="password" class="form-input" placeholder="6자 이상 입력"
+                           required minlength="6">
                     <button type="button" class="input-icon-btn" onclick="togglePassword('password', 'eyeIcon1')">
-                        <svg id="eyeIcon1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        <svg id="eyeIcon1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
                     </button>
                 </div>
             </div>
@@ -195,8 +212,13 @@
                 <label for="confirmPassword" class="form-label">비밀번호 확인</label>
                 <div class="input-wrapper">
                     <input type="password" id="confirmPassword" class="form-input" placeholder="비밀번호 재입력" required>
-                    <button type="button" class="input-icon-btn" onclick="togglePassword('confirmPassword', 'eyeIcon2')">
-                        <svg id="eyeIcon2" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    <button type="button" class="input-icon-btn"
+                            onclick="togglePassword('confirmPassword', 'eyeIcon2')">
+                        <svg id="eyeIcon2" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
                     </button>
                 </div>
                 <p id="passwordCheck" class="help-text"></p>
@@ -212,73 +234,87 @@
 </div>
 
 <script>
-    // let usernameChecked = false;
-    // let usernameAvailable = false;
-    // let nicknameChecked = false;
-    // let nicknameAvailable = false;
+    let usernameChecked = false;
+    let usernameAvailable = false;
+    let nicknameChecked = false;
+    let nicknameAvailable = false;
 
-    // 1. 아이디 중복 확인
-    // async function checkUsername() {
-    //     const username = document.getElementById('username').value.trim();
-    //     const checkElement = document.getElementById('usernameCheck');
-    //     if (!username || username.length < 3) {
-    //         showMessage(checkElement, '아이디는 3자 이상이어야 합니다.', 'error');
-    //         return;
-    //     }
-    //     try {
-    //         const response = await fetch(`/api/member/check-loginId?loginId=${encodeURIComponent(username)}`);
-    //         const isDuplicate = await response.json();
-    //         usernameChecked = true;
-    //         usernameAvailable = !isDuplicate;
-    //         isDuplicate ? showMessage(checkElement, '✗ 이미 사용 중인 아이디입니다.', 'error')
-    //             : showMessage(checkElement, '✓ 사용 가능한 아이디입니다.', 'success');
-    //     } catch (e) { showMessage(checkElement, '확인 중 오류가 발생했습니다.', 'error'); }
-    // }
-    // async function checkUsername() {
-    //     const username = document.getElementById('username').value.trim();
-    //     const checkElement = document.getElementById('usernameCheck');
-    //
-    //     try {
-    //         const response = await fetch(`/api/member/check-loginId?loginId=${encodeURIComponent(username)}`);
-    //
-    //         if (!response.ok) {
-    //             // 서버 응답 자체가 실패한 경우 (404, 500 등)
-    //             throw new Error(`서버 응답 오류: ${response.status}`);
-    //         }
-    //
-    //         const isDuplicate = await response.json();
-    //         // ... (성공 로직)
-    //     } catch (error) {
-    //         console.error('상세 에러 내용:', error); // 콘솔에 찍힌 에러 메시지를 확인하세요.
-    //         checkElement.textContent = `오류 발생: ${error.message}`;
-    //         checkElement.className = 'help-text error';
-    //         checkElement.style.display = 'block';
-    //     }
-    // }
-    //
-    // // 2. 닉네임 중복 확인
-    // async function checkNickname() {
-    //     const nickname = document.getElementById('nickname').value.trim();
-    //     const checkElement = document.getElementById('nicknameCheck');
-    //     if (!nickname || nickname.length < 2) {
-    //         showMessage(checkElement, '닉네임은 2자 이상이어야 합니다.', 'error');
-    //         return;
-    //     }
-    //     try {
-    //         const response = await fetch(`/api/member/check-nickname?nickname=${encodeURIComponent(nickname)}`);
-    //         const isDuplicate = await response.json();
-    //         nicknameChecked = true;
-    //         nicknameAvailable = !isDuplicate;
-    //         isDuplicate ? showMessage(checkElement, '✗ 이미 사용 중인 닉네임입니다.', 'error')
-    //             : showMessage(checkElement, '✓ 사용 가능한 닉네임입니다.', 'success');
-    //     } catch (e) { showMessage(checkElement, '확인 중 오류가 발생했습니다.', 'error'); }
-    // }
+    // 1. 아이디 중복 확인// ⚠️ 반드시 기존의 checkUsername 함수들을 삭제하고 아래 하나만 남기세요.
+    async function checkUsername() {
+        const usernameInput = document.getElementById('username');
+        const checkElement = document.getElementById('usernameCheck');
+
+        // 정규표현식: 영문 소문자와 숫자만 허용 (자음/모음 자동 차단)
+        const idRegex = /^[a-z0-9]{3,15}$/;
+
+        if (!usernameInput) {
+            console.error("아이디 입력창(id='username')을 찾을 수 없습니다.");
+            return;
+        }
+
+        const username = usernameInput.value.trim();
+
+        // 1단계: 빈 값 및 길이 검사
+        if (!username || username.length < 3) {
+            showMessage(checkElement, '아이디는 3자 이상이어야 합니다.', 'error');
+            return;
+        }
+
+        // 2단계: 정규식 검사 (여기서 사용하므로 이제 회색으로 뜨지 않습니다)
+        if (!idRegex.test(username)) {
+            showMessage(checkElement, '아이디는 영문 소문자와 숫자만 사용 가능합니다.', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/member/check-loginId?loginId=${encodeURIComponent(username)}`);
+
+            // Security 권한 문제 등으로 HTML이 반환되는지 체크
+            if (!response.ok || response.headers.get("content-type").includes("text/html")) {
+                throw new Error("서버 응답 오류 (권한 설정을 확인하세요)");
+            }
+
+            const isDuplicate = await response.json();
+            isDuplicate ? showMessage(checkElement, '✗ 이미 사용 중인 아이디입니다.', 'error')
+                : showMessage(checkElement, '✓ 사용 가능한 아이디입니다.', 'success');
+        } catch (e) {
+            console.error(e);
+            showMessage(checkElement, '확인 중 오류가 발생했습니다.', 'error');
+        }
+    }
+
+    // 2. 닉네임 중복 확인
+    async function checkNickname() {
+        const nickname = document.getElementById('nickname').value.trim();
+        const checkElement = document.getElementById('nicknameCheck');
+
+        const nicknameRegex = /^[가-힣a-zA-Z0-9]{2,10}$/;
+
+        if (!nicknameRegex.test(nickname)) {
+            showMessage(checkElement, '닉네임은 완성된 한글, 영문, 숫자 2~10자만 가능합니다.', 'error');
+            return;
+        }
+        try {
+            const response = await fetch(`/api/member/check-nickname?nickname=${encodeURIComponent(nickname)}`);
+            const isDuplicate = await response.json();
+
+            nicknameChecked = true;
+            nicknameAvailable = !isDuplicate;
+            isDuplicate ? showMessage(checkElement, '✗ 이미 사용 중인 닉네임입니다.', 'error')
+                : showMessage(checkElement, '✓ 사용 가능한 닉네임입니다.', 'success');
+        } catch (e) {
+            showMessage(checkElement, '확인 중 오류가 발생했습니다.', 'error');
+        }
+    }
 
     // 3. 이메일 형식 검사
-    document.getElementById('email').addEventListener('blur', function() {
+    document.getElementById('email').addEventListener('blur', function () {
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         const checkElement = document.getElementById('emailCheck');
-        if (!this.value) { checkElement.style.display = 'none'; return; }
+        if (!this.value) {
+            checkElement.style.display = 'none';
+            return;
+        }
         emailRegex.test(this.value) ? showMessage(checkElement, '✓ 올바른 이메일 형식입니다.', 'success')
             : showMessage(checkElement, '✗ 올바른 이메일 형식을 입력해주세요.', 'error');
     });
@@ -297,7 +333,7 @@
     }
 
     // 5. 비밀번호 일치 실시간 확인
-    document.getElementById('confirmPassword').addEventListener('input', function() {
+    document.getElementById('confirmPassword').addEventListener('input', function () {
         const checkElement = document.getElementById('passwordCheck');
         const isMatch = this.value === document.getElementById('password').value;
         isMatch ? showMessage(checkElement, '✓ 비밀번호가 일치합니다.', 'success')
@@ -311,7 +347,7 @@
     }
 
     // 제출 전 최종 검사
-    document.getElementById('signupForm').addEventListener('submit', function(e) {
+    document.getElementById('signupForm').addEventListener('submit', function (e) {
         if (document.getElementById('password').value !== document.getElementById('confirmPassword').value) {
             alert('비밀번호가 일치하지 않습니다.');
             e.preventDefault();

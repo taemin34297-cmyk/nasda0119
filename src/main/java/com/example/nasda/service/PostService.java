@@ -12,7 +12,9 @@ import com.example.nasda.repository.PostImageRepository;
 import com.example.nasda.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -192,5 +194,16 @@ public class PostService {
                     return new HomePostDto(post.getPostId(), post.getTitle(), imageUrl);
                 })
                 .toList();
+    }
+    // PostService.java
+
+    // ✅ 마이페이지: 내 게시글 10개씩 페이징 조회 (기존 List 메서드 대신 사용)
+    @Transactional(readOnly = true)
+    public Page<PostEntity> findByUserId(Integer userId, int page) {
+        // 10개씩, 최신순 정렬 설정
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        // 리포지토리의 Page 반환 메서드 호출
+        return postRepository.findByUser_UserId(userId, pageable);
     }
 }

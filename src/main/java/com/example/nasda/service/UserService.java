@@ -75,7 +75,25 @@ public class UserService {
     /**
      * 닉네임 중복 확인 (Controller 에러 해결용)
      */
-    public boolean isNicknameAvailable(String nickname) {
-        return !userRepository.existsByNickname(nickname);
+    public boolean isLoginIdDuplicate(String loginId) {
+        return userRepository.existsByLoginId(loginId);
+    }
+
+    /**
+     * 닉네임 중복 확인
+     * 컨트롤러에서 호출하는 이름: isNicknameDuplicate
+     */
+    public boolean isNicknameDuplicate(String nickname) {
+        // 이미 존재하면 true (중복), 없으면 false를 반환합니다.
+        return userRepository.existsByNickname(nickname);
+    }
+
+    /**
+     * 이메일 중복 확인
+     * 컨트롤러에서 호출하는 이름: isEmailDuplicate
+     */
+    public boolean isEmailDuplicate(String email) {
+        // 이미 존재하면 true (중복), 없으면 false를 반환합니다.
+        return userRepository.existsByEmail(email);
     }
 }

@@ -46,4 +46,5 @@ public interface PostRepository extends JpaRepository<PostEntity, Integer> {
     List<PostEntity> findByUser_NicknameContainingIgnoreCaseOrderByCreatedAtDesc(String keyword);
 
     List<PostEntity> findByCategory_CategoryNameContainingIgnoreCaseOrderByCreatedAtDesc(String keyword);
-}
+
+    Page<PostEntity> findByUser_UserId(Integer userId, Pageable pageable);}

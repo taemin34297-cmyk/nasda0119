@@ -16,18 +16,18 @@
     </div>
 
     <div class="space-y-4">
-        <div th:if="${posts == null or posts.isEmpty()}"
+        <div th:if="${paging == null or paging.isEmpty()}"
              class="py-20 text-center bg-white rounded-2xl border border-dashed border-[#E8D5C4]">
             <p class="text-[#A89080]">아직 작성한 게시물이 없습니다.</p>
         </div>
 
-        <div th:each="post : ${posts}"
+        <div th:each="post : ${paging.content}"
              th:onclick="|location.href='/posts/' + ${post.postId}|"
-             class="bg-white p-6 rounded-2xl border border-[#E8D5C4]/30 shadow-sm flex justify-between items-center cursor-pointer hover:bg-[#F2ECE4] transition-all">
+             class="bg-white p-6 rounded-2xl border border-[#E8D5C4]/30 shadow-sm flex justify-between items-center cursor-pointer hover:bg-[#F2ECE4] transition-all relative overflow-hidden">
 
             <div class="flex-1">
                 <h3 class="text-lg font-bold text-[#5A4D41] mb-1" th:text="${post.title}">게시글 제목</h3>
-                <p class="text-sm text-[#A89080]" th:text="${#temporals.format(post.createdAt, 'yyyy.MM.dd HH:mm')}">2026.01.14</p>
+                <p class="text-sm text-[#A89080]" th:text="${#temporals.format(post.createdAt, 'yyyy.MM.dd HH:mm')}">날짜</p>
             </div>
 
             <div class="text-[#D4C4B0] ml-4">
@@ -36,6 +36,30 @@
                 </svg>
             </div>
         </div>
+    </div>
+
+    <div th:if="${!paging.isEmpty()}" class="mt-10 flex justify-center items-center gap-2">
+        <a th:href="@{/posts/my(page=${paging.number - 1})}"
+           th:if="${paging.hasPrevious}"
+           class="px-4 py-2 rounded-lg bg-white border border-[#E8D5C4] text-[#A89080] hover:bg-[#F2ECE4]">
+            이전
+        </a>
+
+        <div class="flex gap-1">
+            <a th:each="page: ${#numbers.sequence(0, paging.totalPages - 1)}"
+               th:if="${page >= paging.number - 2 and page <= paging.number + 2}"
+               th:href="@{/posts/my(page=${page})}"
+               th:text="${page + 1}"
+               th:classappend="${page == paging.number} ? 'bg-[#A89080] text-white' : 'bg-white text-[#A89080] border-[#E8D5C4]'"
+               class="w-10 h-10 flex items-center justify-center rounded-lg border hover:bg-[#F2ECE4]">
+            </a>
+        </div>
+
+        <a th:href="@{/posts/my(page=${paging.number + 1})}"
+           th:if="${paging.hasNext}"
+           class="px-4 py-2 rounded-lg bg-white border border-[#E8D5C4] text-[#A89080] hover:bg-[#F2ECE4]">
+            다음
+        </a>
     </div>
 </main>
 

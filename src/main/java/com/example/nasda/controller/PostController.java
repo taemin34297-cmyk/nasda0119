@@ -10,6 +10,7 @@ import com.example.nasda.service.CommentService;
 import com.example.nasda.service.PostImageService;
 import com.example.nasda.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -153,22 +154,26 @@ public class PostController {
         if (userId == null) return "redirect:/user/login";
 
         postService.delete(id, userId);
-        return "redirect:/";
+        return "redirect:/posts/my";
     }
 
-    // PostController.java에 추가
     @GetMapping("/posts/my")
-    public String myPosts(Model model) {
+    public String myPosts(
+            @RequestParam(value = "page", defaultValue = "0") int page, // 페이지 번호 추가
+            Model model) {
+
         Integer userId = authUserService.getCurrentUserIdOrNull();
         if (userId == null) return "redirect:/user/login";
 
-        // postService에 유저 ID로 글을 찾는 메서드가 있다고 가정
-        List<PostEntity> myPosts = postService.findByUserId(userId);
-        model.addAttribute("posts", myPosts);
+        // 10개씩 페이징 처리된 결과를 가져옴
+        // 서비스의 findByUserId 메서드가 Page<PostEntity>를 반환하도록 수정되어야 합니다.
+        Page<PostEntity> paging = postService.findByUserId(userId, page);
+
+        model.addAttribute("paging", paging); // 'posts' 대신 'paging'으로 전달하면 관리하기 편합니다.
 
         String nickname = authUserService.getCurrentNicknameOrNull();
         model.addAttribute("username", nickname == null ? "게스트" : nickname);
 
-        return "post/my-list"; // 새로 만들 HTML 파일명
+        return "post/my-list";
     }
 }
