@@ -2,6 +2,7 @@ package com.example.nasda.service;
 
 import com.example.nasda.domain.CategoryEntity;
 import com.example.nasda.domain.PostEntity;
+import com.example.nasda.domain.PostImageEntity;
 import com.example.nasda.domain.UserEntity;
 import com.example.nasda.domain.UserRepository;
 import com.example.nasda.dto.post.HomePostDto;
@@ -38,6 +39,28 @@ public class PostService {
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
     }
 
+    // ✅ (추가) postId로 이미지 객체 리스트 만들기: [id, url, sortOrder]
+    @Transactional(readOnly = true)
+    public List<PostViewDto.ImageDto> getImageItems(Integer postId) {
+        return postImageRepository.findAllByPost_PostIdOrderBySortOrderAsc(postId)
+                .stream()
+                .map(img -> new PostViewDto.ImageDto(
+                        img.getImageId(),
+                        img.getImageUrl(),
+                        img.getSortOrder()
+                ))
+                .toList();
+    }
+
+    // ✅ (기존) postId로 이미지 URL 리스트
+    @Transactional(readOnly = true)
+    public List<String> getImageUrls(Integer postId) {
+        return postImageRepository.findAllByPost_PostIdOrderBySortOrderAsc(postId)
+                .stream()
+                .map(PostImageEntity::getImageUrl)
+                .toList();
+    }
+
     // 🔹 홈 게시글 목록 (최신 30개 + 대표 이미지 1장)
     @Transactional(readOnly = true)
     public List<HomePostDto> getHomePosts() {
@@ -45,7 +68,7 @@ public class PostService {
                 .map(post -> {
                     String imageUrl = postImageRepository
                             .findFirstByPost_PostIdOrderBySortOrderAsc(post.getPostId())
-                            .map(img -> img.getImageUrl())
+                            .map(PostImageEntity::getImageUrl)
                             .orElse(null);
 
                     return new HomePostDto(post.getPostId(), post.getTitle(), imageUrl);
@@ -126,11 +149,8 @@ public class PostService {
 
         return posts.stream()
                 .map(post -> {
-                    List<String> images = postImageRepository
-                            .findAllByPost_PostIdOrderBySortOrderAsc(post.getPostId())
-                            .stream()
-                            .map(img -> img.getImageUrl())
-                            .toList();
+                    List<String> images = getImageUrls(post.getPostId());
+                    List<PostViewDto.ImageDto> imageItems = getImageItems(post.getPostId());
 
                     return new PostViewDto(
                             post.getPostId(),
@@ -139,6 +159,7 @@ public class PostService {
                             post.getCategory().getCategoryName(),
                             new PostViewDto.AuthorDto(post.getUser().getNickname()),
                             images,
+                            imageItems,
                             post.getCreatedAt(),
                             true
                     );
@@ -162,7 +183,7 @@ public class PostService {
         return page.map(post -> {
             String imageUrl = postImageRepository
                     .findFirstByPost_PostIdOrderBySortOrderAsc(post.getPostId())
-                    .map(img -> img.getImageUrl())
+                    .map(PostImageEntity::getImageUrl)
                     .orElse(null);
 
             return new HomePostDto(post.getPostId(), post.getTitle(), imageUrl);
@@ -188,22 +209,18 @@ public class PostService {
                 .map(post -> {
                     String imageUrl = postImageRepository
                             .findFirstByPost_PostIdOrderBySortOrderAsc(post.getPostId())
-                            .map(img -> img.getImageUrl())
+                            .map(PostImageEntity::getImageUrl)
                             .orElse(null);
 
                     return new HomePostDto(post.getPostId(), post.getTitle(), imageUrl);
                 })
                 .toList();
     }
-    // PostService.java
 
-    // ✅ 마이페이지: 내 게시글 10개씩 페이징 조회 (기존 List 메서드 대신 사용)
+    // ✅ 마이페이지: 내 게시글 10개씩 페이징 조회
     @Transactional(readOnly = true)
     public Page<PostEntity> findByUserId(Integer userId, int page) {
-        // 10개씩, 최신순 정렬 설정
         Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
-
-        // 리포지토리의 Page 반환 메서드 호출
         return postRepository.findByUser_UserId(userId, pageable);
     }
 }

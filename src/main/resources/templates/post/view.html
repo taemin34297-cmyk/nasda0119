@@ -62,38 +62,42 @@
             </div>
 
             <!-- ✅ 게시글 이미지 (첫 이미지부터 넘기는 Swiper 1개로) -->
-            <div th:if="${post.images != null and !post.images.isEmpty()}" class="post-images">
+            <!-- ✅ 게시글 이미지 -->
+            <div th:if="${post.imageItems != null and !post.imageItems.isEmpty()}" class="post-images">
 
                 <div class="swiper postImagesSwiper">
                     <div class="swiper-wrapper">
 
-                        <th:block th:each="image, iter : ${post.images}">
+                        <th:block th:each="image, iter : ${post.imageItems}">
 
-
-
-                            <!-- ✅ 첫 번째 슬라이드: 꾸미기 캔버스(스티커) 유지 -->
+                            <!-- ✅ 1번째: 꾸미기 캔버스 -->
                             <div class="swiper-slide" th:if="${iter.first}">
                                 <div id="sticker-canvas"
-                                     class="sticker-canvas relative rounded-2xl overflow-hidden bg-[#F9F6F1]">
-                                    <img th:src="@{${image}}" th:alt="${post.title}"
+                                     class="sticker-canvas relative rounded-2xl overflow-hidden bg-[#F9F6F1]"
+                                     th:data-image-id="${image.id}">
+
+                                    <img th:src="@{${image.url}}"
+                                         th:alt="${post.title}"
                                          class="post-image select-none w-full h-full block">
-                                    <div id="sticker-layer" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+
+                                    <div id="sticker-layer"
+                                         class="absolute inset-0 pointer-events-none overflow-hidden"></div>
                                 </div>
                             </div>
 
-                            <!-- ✅ 2번째~: 일반 이미지 -->
+                            <!-- ✅ 2번째~ 일반 이미지 -->
                             <div class="swiper-slide" th:unless="${iter.first}">
-                                <img th:src="@{${image}}" th:alt="${post.title}" class="post-image w-full h-full block">
+                                <img th:src="@{${image.url}}"
+                                     th:alt="${post.title}"
+                                     class="post-image w-full h-full block"
+                                     th:data-image-id="${image.id}">
                             </div>
 
                         </th:block>
 
                     </div>
 
-                    <!-- 페이지네이션(점) -->
                     <div class="swiper-pagination"></div>
-
-                    <!-- 좌/우 버튼 -->
                     <div class="swiper-button-prev"></div>
                     <div class="swiper-button-next"></div>
                 </div>
@@ -309,6 +313,7 @@
     const stickerLayer = document.getElementById('sticker-layer');
     const stickerCanvas = document.getElementById('sticker-canvas');
     const stickerPalette = document.getElementById('sticker-palette');
+    console.log("sticker imageId =", stickerCanvas?.dataset?.imageId);
 
     function initPalette() {
         if (!stickerPalette) return;

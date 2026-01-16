@@ -52,25 +52,31 @@ public class PostController {
             Model model
     ) {
         try {
+            // /posts/create 와 충돌 방지
             if ("create".equals(postIdStr)) return "redirect:/posts/create";
 
             Integer postId = Integer.parseInt(postIdStr);
 
             PostEntity entity = postService.get(postId);
-            List<String> imageUrls = postImageService.getImageUrls(postId);
-            Integer currentUserId = authUserService.getCurrentUserIdOrNull();
 
+            Integer currentUserId = authUserService.getCurrentUserIdOrNull();
             boolean isOwner = currentUserId != null
                     && entity.getUser() != null
                     && currentUserId.equals(entity.getUser().getUserId());
 
+            List<String> imageUrls = postImageService.getImageUrls(postId);
+
+            // ✅ 추가: id+url 객체 리스트 (꾸미기/확장용)
+            List<PostViewDto.ImageDto> imageItems = postService.getImageItems(postId);
+
             PostViewDto post = new PostViewDto(
                     entity.getPostId(),
                     entity.getTitle(),
-                    entity.getDescription(),
+                    entity.getDescription(), // content로 사용
                     entity.getCategory().getCategoryName(),
                     new PostViewDto.AuthorDto(entity.getUser().getNickname()),
                     imageUrls,
+                    imageItems,
                     entity.getCreatedAt(),
                     isOwner
             );
@@ -159,17 +165,14 @@ public class PostController {
 
     @GetMapping("/posts/my")
     public String myPosts(
-            @RequestParam(value = "page", defaultValue = "0") int page, // 페이지 번호 추가
-            Model model) {
-
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            Model model
+    ) {
         Integer userId = authUserService.getCurrentUserIdOrNull();
         if (userId == null) return "redirect:/user/login";
 
-        // 10개씩 페이징 처리된 결과를 가져옴
-        // 서비스의 findByUserId 메서드가 Page<PostEntity>를 반환하도록 수정되어야 합니다.
         Page<PostEntity> paging = postService.findByUserId(userId, page);
-
-        model.addAttribute("paging", paging); // 'posts' 대신 'paging'으로 전달하면 관리하기 편합니다.
+        model.addAttribute("paging", paging);
 
         String nickname = authUserService.getCurrentNicknameOrNull();
         model.addAttribute("username", nickname == null ? "게스트" : nickname);
