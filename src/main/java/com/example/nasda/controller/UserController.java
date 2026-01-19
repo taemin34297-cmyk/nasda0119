@@ -188,5 +188,58 @@ public class UserController {
             return "user/signup";
         }
 
+
+    }
+    // UserController.java에 추가
+
+    // 1. 아이디 찾기 페이지 이동
+    @GetMapping("/find-id")
+    public String findIdForm() {
+        return "user/find-id"; // find-id.html을 보여줌
+    }
+
+    // 2. 아이디 찾기 처리 (아까 만든 로직)
+    @PostMapping("/find-id")
+    public String findId(@RequestParam("email") String email, Model model) {
+        try {
+            userService.findAndSendId(email); // 메일 발송 로직 호출
+            model.addAttribute("message", "입력하신 이메일로 아이디를 발송했습니다.");
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", e.getMessage());
+        }
+        return "user/find-id"; // 같은 페이지에서 메시지만 보여줌
+    }
+    // 비밀번호 찾기 페이지 이동
+    @GetMapping("/find-pw")
+    public String findPwForm() {
+        return "user/find-pw";
+    }
+
+    // 비밀번호 찾기 처리
+    @PostMapping("/find-pw")
+    public String findPw(@RequestParam("loginId") String loginId,
+                         @RequestParam("email") String email,
+                         Model model) {
+        try {
+            userService.findAndSendPassword(loginId, email);
+            model.addAttribute("message", "입력하신 이메일로 임시 비밀번호를 발송했습니다.");
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", e.getMessage());
+        }
+        return "user/find-pw";
+    }
+    // 인증코드 발송
+    @PostMapping("/send-code")
+    @ResponseBody // 페이지 이동 없이 데이터만 응답
+    public String sendCode(@RequestParam("email") String email) {
+        userService.sendVerificationCode(email);
+        return "success";
+    }
+
+    // 인증코드 검증
+    @PostMapping("/verify-code")
+    @ResponseBody
+    public boolean verifyCode(@RequestParam("code") String code) {
+        return userService.checkVerificationCode(code);
     }
 }

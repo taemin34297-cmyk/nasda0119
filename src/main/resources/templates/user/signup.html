@@ -189,8 +189,25 @@
 
             <div class="form-group">
                 <label for="email" class="form-label">이메일</label>
-                <input type="email" id="email" name="email" class="form-input" placeholder="example@email.com" required>
+                <div class="input-with-button">
+                    <input type="email" id="email" name="email"
+                           class="form-input" style="background-color: white;"
+                           placeholder="example@naver.com" required>
+                    <button type="button" class="btn-check" onclick="sendEmailCode()"
+                            style="background-color: #6d6158 !important; color: white !important;">번호 받기</button>
+                </div>
                 <p id="emailCheck" class="help-text"></p>
+            </div>
+
+            <div class="form-group">
+                <label for="authCode" class="form-label">인증번호</label>
+                <div class="input-with-button">
+                    <input type="text" id="authCode" class="form-input"
+                           style="background-color: white;" placeholder="6자리 숫자 입력">
+                    <button type="button" class="btn-check" id="verifyBtn" onclick="verifyEmailCode()"
+                            style="background-color: #6d6158 !important; color: white !important;">인증 확인</button>
+                </div>
+                <p id="verify-msg" class="help-text"></p>
             </div>
 
             <div class="form-group">
@@ -353,6 +370,52 @@
             e.preventDefault();
         }
     });
+
 </script>
+<script th:inline="javascript">
+    let isEmailVerified = false;
+
+    function sendEmailCode() {
+        const email = document.getElementById('email').value;
+        if (!email) {
+            alert("이메일을 입력해주세요.");
+            return;
+        }
+
+        fetch('/user/send-code?email=' + email, {method: 'POST'})
+            .then(() => alert("나스다 인증번호가 발송되었습니다. :)"));
+    }
+
+    function verifyEmailCode() {
+        const code = document.getElementById('authCode').value;
+        const msg = document.getElementById('verify-msg');
+
+        fetch('/user/verify-code?code=' + code, {method: 'POST'})
+            .then(res => res.json())
+            .then(isSuccess => {
+                if (isSuccess) {
+                    msg.innerText = "인증이 완료되었습니다. :)";
+                    msg.style.color = "#8a7b6a";
+                    isEmailVerified = true;
+                    document.getElementById('email').readOnly = true;
+                } else {
+                    msg.innerText = "인증번호가 틀렸습니다.";
+                    msg.style.color = "red";
+                    isEmailVerified = false;
+                }
+            });
+    }
+
+    // [중요] 폼 전송 시 이메일 인증 여부 최종 체크
+    document.getElementById('signupForm').onsubmit = function () {
+        if (!isEmailVerified) {
+            alert("이메일 인증을 완료해야 가입이 가능합니다.");
+            return false;
+        }
+        return true;
+    };
+</script>
+</body>
+</html>
 </body>
 </html>

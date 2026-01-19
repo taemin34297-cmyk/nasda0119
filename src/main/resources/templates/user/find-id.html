@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Nasda - 아이디 찾기</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700&family=Pretendard:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Pretendard', sans-serif;
+      background-color: #f7f3f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background-color: white;
+      padding: 60px 40px;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 450px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+    }
+    h2 {
+      /* 스크린샷의 '로그인' 폰트 스타일 적용 */
+      font-family: 'Nanum Myeongjo', serif;
+      color: #555;
+      font-size: 38px;
+      margin-bottom: 45px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+    .input-group {
+      margin-bottom: 25px;
+      text-align: left;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+    input {
+      width: 100%;
+      padding: 18px 20px;
+      border: 1px solid #e8e2de;
+      border-radius: 12px;
+      box-sizing: border-box;
+      outline: none;
+      font-size: 15px;
+      background-color: #fff;
+      transition: border-color 0.2s;
+    }
+    input:focus {
+      border-color: #d6c9b8;
+    }
+    input::placeholder {
+      color: #ccc;
+    }
+    button {
+      width: 100%;
+      padding: 18px;
+      background-color: #d6c9b8;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #c5b8a7;
+    }
+    .message {
+      margin-top: 25px;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .success { color: #8a7b6a; background-color: #fdfaf7; border: 1px solid #eee; }
+    .error { color: #d9534f; background-color: #fff5f5; }
+    .utils {
+      margin-top: 35px;
+      font-size: 15px;
+      color: #333;
+    }
+    .utils a {
+      color: #333;
+      text-decoration: none;
+      margin: 0 8px;
+    }
+    .utils span {
+      color: #eee;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>아이디 찾기</h2>
+  <form th:action="@{/user/find-id}" method="post">
+    <div class="input-group">
+      <label>이메일</label>
+      <input type="email" name="email" placeholder="이메일을 입력하세요" required>
+    </div>
+    <button type="submit">아이디 발송</button>
+  </form>
+  <div th:if="${message}" class="message success" th:text="${message}"></div>
+  <div th:if="${errorMessage}" class="message error" th:text="${errorMessage}"></div>
+  <div class="utils">
+    <a th:href="@{/user/login}">로그인</a> <span>|</span>
+    <a th:href="@{/user/find-pw}">비밀번호 찾기</a>
+  </div>
+</div>
+</body>
+</html>
